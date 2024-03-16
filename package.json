@@ -1,0 +1,14 @@
+{
+  "name": "brianbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "author": "Kirdow",
+  "license": "MPL",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "^14.6.0",
+    "dotenv": "^16.4.3",
+    "websocket": "^1.0.34"
+  }
+}

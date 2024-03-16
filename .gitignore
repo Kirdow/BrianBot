@@ -1,0 +1,19 @@
+# logs
+logs
+*.log
+
+# Swap files
+*.swp
+
+# Directories
+node_modules/
+
+# Files
+package-lock.json
+
+# dotenv
+.env
+
+# timezone file
+timezones.csv
+
