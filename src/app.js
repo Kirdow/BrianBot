@@ -7,6 +7,9 @@
 import { GatewayIntentBits, Partials } from 'discord.js'
 import { createBot } from './dbot.js'
 import { promises as fs } from 'fs'
+import { storeTimezone, getTimezone } from './tzdb.js'
+
+import SettimezoneCommand from './cmd/settimezone.js'
 
 const regex = /\-(\d\d?):?(\d\d)? ?([AaPp][Mm])? ?([A-Za-z]+)?([\+\-]\d\d?:?(\d\d)?)?\-/g
 const plusRegex = /^([\+\-])(\d\d?)(\:\d\d)?$/
@@ -60,10 +63,11 @@ const timezoneMap = await generateMap()
 
 async function messageCreate(client, message) {
     if (message.author.bot) return;
+    const userTz = await getTimezone(message.author.id) || 'UTC'
     const content = message.content
     const newContent = content.replace(regex, (p, hour, minute, dual, zone, plus) => {
         dual = dual ? dual.toUpperCase() : undefined
-        zone = zone ? zone.toUpperCase() : 'UTC'
+        zone = zone ? zone.toUpperCase() : userTz
         minute ??= '00'
         plus ??= '+0:00'
 
@@ -102,6 +106,41 @@ async function messageCreate(client, message) {
     await message.reply(newContent)
 }
 
+async function interactionResponse(interaction) {
+    if (!interaction.isChatInputCommand()) return
+
+    try {
+        if (interaction.commandName === 'settimezone') {
+            const tz = interaction.options.getString('tz')
+
+            if (!timezoneMap[tz.toUpperCase()]) {
+                await interaction.reply({
+                    content: 'Invalid timezone',
+                    ephemeral: true
+                })
+
+                return
+            }
+
+            await storeTimezone(interaction.user.id, tz.toUpperCase())
+            
+            await interaction.reply({
+                content: `Your timezone is now set to ${tz.toUpperCase()}`,
+                ephemeral: true
+            })
+
+            return
+        }
+
+        await interaction.reply({
+            content: 'Unknown command',
+            ephemeral: true
+        })
+    } catch (error) {
+        console.log("Interaction error", error)
+    }
+}
+
 const bbot = createBot({
     authPrefix: 'B',
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
@@ -109,7 +148,11 @@ const bbot = createBot({
     ready: client => {
         console.log(`Logged in as ${client.user.tag}`)
     },
+    commands: [
+        SettimezoneCommand
+    ],
     eventsCallback: client => {
+        client.on('interactionCreate', interactionResponse)
         client.on('messageCreate', async (...args) => await messageCreate(client, ...args))
     }
 })

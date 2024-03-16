@@ -42,7 +42,20 @@ BTOKEN="<insert bot auth token here>"
 BCLIENT_ID="<insert client/app id here>"
 ```
 
-Additionally, you will need another file called `timezones.csv`. Due to potential licensing issues I have not included this in here.<br>
+You will also need to have a MongoDB server running somewhere. This setup assumes that authentication is required for your MongoDB server.<br>
+For the `.env` file, add these two lines
+```
+DB_ADDRESS="<insert mongodb server address here>"
+DB_PORT="<insert mongodb server port here>"
+```
+Additionally the MongoDB usage I use comes from a few different projects of mine and generates a config key from a hash algorithm I made.<br>
+Brian Bot uses the database name `brianbot` so create a user under sand database, then add this to your `.env` file.
+```
+DB_USER_AQWSBEQL="<insert mongodb user here>"
+DB_PASS_AQWSBEQL="<insert mongodb user password here>"
+```
+
+Additionally, you will need a file called `timezones.csv`. Due to potential licensing issues I have not included this in here.<br>
 Instead you need to naviate to [List of time zone abbreviations on Wikipedia](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations) and download that table as a csv file.<br>
 Wikipedia don't have their own way of offering that to you, but simply googling something like `wikipedia table to csv` should give you some ways of doing that.
 
