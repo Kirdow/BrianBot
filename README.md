@@ -1,6 +1,21 @@
 # Brian Bot
 **Brian Bot** is a bot that currently allows you to easily mention Timezones in discord chats.
 
+# Slash Commands
+There's only one slash command
+```
+/settimezone <tz>
+```
+This is used to set your own timezone with the bot. Without it the bot will assume your timezone is UTC. But with it, it will change your default fallback from UTC to whatever you have set.
+
+For example, your timezone is PDT, if so, use
+```
+/settimezone tz:pdt
+```
+This will change your timezone fallback to PDT rather than UTC.
+
+Do also note that when your country switches between daylight saving times, you will need to adapt manually. I would do it automatically, but not all countries follow daylight saving, which means it would be inaccurate.
+
 # How to use
 Supports multiple message layouts.
 Here's a few examples
@@ -15,12 +30,12 @@ Here's a few examples
 12AM CET
 ```
 
-There is however a few bugs and side effects with the regex. Due to the default fallback being UTC and some middle parts being optional, the following is also valid
+There is however a few bugs and side effects with the regex. Due to the default fallback being UTC (Unless you changed it with `/settimezone`) and some middle parts being optional, the following is also valid
 ```
 18:30 +1
 ```
 
-This would be the same as
+This would be the same as (or if you used `/settimezone`, replace UTC with whatever you have set)
 ```
 18:30 UTC+1
 ```
