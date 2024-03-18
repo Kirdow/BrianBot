@@ -125,7 +125,7 @@ async function messageCreate(client: Client, message: Message): Promise<void> {
 
     newContent = await replaceAsync(newContent, currencyRegex, async (p: string, value: string, currency: string) => {
         try {
-            const valueStr = value.replace(' ', '')
+            const valueStr = value.replaceAll(' ', '')
             const valueNumber = Number(valueStr)
             const eurStr = await getCurrencyValueString(currency, valueNumber)
             return eurStr
