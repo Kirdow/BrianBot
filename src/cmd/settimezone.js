@@ -4,8 +4,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// Lib imports
 import { SlashCommandBuilder } from "discord.js";
 
+// Create the command definition for /settimezone
 const settimezoneCommand = new SlashCommandBuilder()
     .setName('settimezone')
     .setDescription('Set your timezone')
@@ -13,4 +15,5 @@ const settimezoneCommand = new SlashCommandBuilder()
         option.setName('tz').setDescription('Your timezone abbreviation').setRequired(true)
     )
 
+// Export the command JSON as a default export
 export default settimezoneCommand.toJSON()

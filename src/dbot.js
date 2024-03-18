@@ -4,10 +4,17 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-const fs = await import('fs')
-import { REST, Routes, Client } from 'discord.js'
+// Import dotenv since we use it
 import 'dotenv/config'
 
+// Lib imports
+const fs = await import('fs')
+import { REST, Routes, Client } from 'discord.js'
+
+// Function used to create a bot client.
+// This stems from a private project where I run multiple users for the same bot due to customization.
+// Very easy to use, and follows a "single object for every initialization" model. Not an offical term,
+// but it describes it well enough tbh.
 export function createBot(opts) {
     const token = process.env[`${opts.authPrefix}TOKEN`]
     const clientId = process.env[`${opts.authPrefix}CLIENT_ID`]
@@ -29,6 +36,8 @@ export function createBot(opts) {
     const client = new Client({ intents: opts.intents || [], partials: opts.partials || [], rest: rest })
     const loggerFilter = (text) => {
         text = text.toLowerCase()
+        // Heartbeat spam is just wack so I get rid of it.
+        // Just my ocd not wanting the systemd logs to simply be heartbeat logs when trying to find bugs.
         if (text.includes('sending a heartbeat')) return true
         if (text.includes('heartbeat acknowledged')) return true
 

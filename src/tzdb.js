@@ -4,9 +4,18 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import {time} from "console"
+// Imports database
 import { getDatabase, getCollection } from "./db.js"
 
+// This file should be self explanatory. If anything, read the JSDoc of each function.
+// The code is written simple enough and MongoDB functions are self descriptive.
+
+/**
+ * Used to store a timezone for a specific user.
+ * @param {string} userId - The discord.js ID of the user
+ * @param {string} timezoneName - Timezone abbreviation of the user. (UTC, GMT, CET, PDT, etc..)
+ * @returns {boolean} - True if the storig was successful. Currently only returned value unless error is thrown.
+ */
 export async function storeTimezone(userId, timezoneName) {
     const db = await getDatabase('brianbot')
     const users = await getCollection('users', db)
@@ -20,6 +29,11 @@ export async function storeTimezone(userId, timezoneName) {
     return true
 }
 
+/**
+ * Used to fetch the timezone for a specific user.
+ * @param {string} userId - The discord.js ID of the user
+ * @returns {string} - The timezone abbreviation of the user. (UTC, GMT, CET, PDT, etc..)
+ */
 export async function getTimezone(userId) {
     const db = await getDatabase('brianbot')
     const users = await getCollection('users', db)

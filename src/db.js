@@ -4,12 +4,21 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// Uses dotenv so this line HAS to be first!
 (await import('dotenv')).config()
+
+// Rest of imports below
 import { MongoClient } from "mongodb";
 
+// Some maps for caching
 const clients = {}
 const keys = {}
 
+// Generates a key based on the database name.
+// This is based on a different project of mine, but with less bugs.
+// This comes from my other projects may use more databases in the same,
+// project thus having a unique key for each database done easily,
+// is a necessity. It's similar to hashing but it's really just botched.
 function getKey(name) {
     name = name.toUpperCase()
     if (keys[name]) return keys[name]
@@ -53,6 +62,11 @@ function getKey(name) {
     return key
 }
 
+// Return client if exist or create it and cache it.
+// This uses the key generated with `getKey` just above.
+// The key is then added as `DB_USER_<key here>` and `DB_PASS_<key here>` in the `.env` file.
+// I'm try to make sure the user and pass never gets logged, nor exit the scope of the if statement,
+// further than the need of creating MongoClient.
 async function connectMongoClient(db) {
     const key = getKey(db)
 
@@ -79,11 +93,16 @@ async function connectMongoClient(db) {
     return clients[db] = client
 }
 
+// Get a database instance based on the name of the database.
+// Calls the above function which uses the key and auth based on the database name.
 export async function getDatabase(name) {
     const client = await connectMongoClient(name)
     return client.db(name)
 }
 
+// Gets the collection needed. Database taken as parameter due to the way we could
+// be using multiple databases per project and each of them have their own auth.
+// Otherwise you'd probably cache the database internally, which we don't.
 export async function getCollection(name, db) {
     const collections = await db.listCollections({}, { nameOnly: true }).toArray()
     const collectionNames = collections.map(c => c.name)

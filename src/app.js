@@ -4,16 +4,24 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// Lib imports
 import { GatewayIntentBits, Partials } from 'discord.js'
-import { createBot } from './dbot.js'
 import { promises as fs } from 'fs'
+
+// Internal imports
+import { createBot } from './dbot.js'
 import { storeTimezone, getTimezone } from './tzdb.js'
 
+// Command imports
 import SettimezoneCommand from './cmd/settimezone.js'
 
+// Regex definitions
 const regex = /\-(\d\d?):?(\d\d)? ?([AaPp][Mm])? ?([A-Za-z]+)?([\+\-]\d\d?:?(\d\d)?)?\-/g
 const plusRegex = /^([\+\-])(\d\d?)(\:\d\d)?$/
 
+// Generate the map of timezones.
+// This takes the timezone abbreviations as input and returns an object storing data about the timezone.
+// Notable we're mostly after the `minutes` field which stores the total minutes of offset from UTC.
 async function generateMap() {
     try {
         const data = await fs.readFile("timezones.csv", { encoding: 'utf8' })
@@ -59,8 +67,11 @@ async function generateMap() {
     }
 }
 
+// Generate the map async and store here.
 const timezoneMap = await generateMap()
 
+// Event run when a user send a message in a channel
+// where the bot has read access.
 async function messageCreate(client, message) {
     if (message.author.bot) return;
     const userTz = await getTimezone(message.author.id) || 'UTC'
@@ -106,6 +117,8 @@ async function messageCreate(client, message) {
     await message.reply(newContent)
 }
 
+// Event run when a user starts an interaction (be that a button or slash command).
+// This currently only uses slash commands.
 async function interactionResponse(interaction) {
     if (!interaction.isChatInputCommand()) return
 
@@ -141,6 +154,9 @@ async function interactionResponse(interaction) {
     }
 }
 
+// Create the actual bot client instance.
+// This uses some code I've copied from other projects of mine.
+// It's pretty simple but also makes the creation of a bot instance simple as well.
 const bbot = createBot({
     authPrefix: 'B',
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
