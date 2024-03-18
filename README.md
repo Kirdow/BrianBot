@@ -76,7 +76,7 @@ Wikipedia don't have their own way of offering that to you, but simply googling 
 
 Once you got all that, you can now run the bot using the following command
 ```sh
-$ node src/app.js
+$ node --loader ts-node/esm src/app.ts
 ```
 
 Do note that you may be missing installed modules, if so, make sure to install them using
@@ -94,7 +94,7 @@ WorkingDirectory=/path/to/brianbot
 User=username
 Group=username
 Type=simple
-ExecStart=/path/to/node /path/to/brianbot/src/app.js
+ExecStart=/path/to/node --loader ts-node/esm /path/to/brianbot/src/app.js
 TimeoutSec=30
 RestartSec=15s
 Restart=always
