@@ -11,13 +11,16 @@ import { promises as fs } from 'fs'
 // Internal imports
 import { createBot } from './dbot.js'
 import { storeTimezone, getTimezone } from './tzdb.js'
+import { replaceAsync } from './utils.js'
 
 // Command imports
 import SettimezoneCommand from './cmd/settimezone.js'
+import {getCurrencyValueString} from './currency.js'
 
 // Regex definitions
 const regex = /\-(\d\d?):?(\d\d)? ?([AaPp][Mm])? ?([A-Za-z]+)?([\+\-]\d\d?:?(\d\d)?)?\-/g
 const plusRegex = /^([\+\-])(\d\d?)(\:\d\d)?$/
+const currencyRegex = /\-([\d ]+) ([A-Za-z]+)\-/g
 
 // Generate the map of timezones.
 // This takes the timezone abbreviations as input and returns an object storing data about the timezone.
@@ -76,7 +79,7 @@ async function messageCreate(client, message) {
     if (message.author.bot) return;
     const userTz = await getTimezone(message.author.id) || 'UTC'
     const content = message.content
-    const newContent = content.replace(regex, (p, hour, minute, dual, zone, plus) => {
+    let newContent = content.replace(regex, (p, hour, minute, dual, zone, plus) => {
         dual = dual ? dual.toUpperCase() : undefined
         zone = zone ? zone.toUpperCase() : userTz
         minute ??= '00'
@@ -109,6 +112,18 @@ async function messageCreate(client, message) {
 
         const time = `<t:${Math.trunc(date.getTime() / 1000)}:f>`
         return time
+    })
+
+    newContent = await replaceAsync(newContent, currencyRegex, async (p, value, currency) => {
+        try {
+            const valueStr = value.replace(' ', '')
+            const valueNumber = Number(valueStr)
+            const eurStr = await getCurrencyValueString(currency, valueNumber)
+            return eurStr
+        } catch (err) {
+            console.error("Failed to convert currency, ", value, ",", currency, ":", err)
+            return p
+        }
     })
     
     if (newContent === content) return;
