@@ -5,7 +5,7 @@
  */
 
 // Lib imports
-import { GatewayIntentBits, Partials } from 'discord.js'
+import { GatewayIntentBits, Partials, Client, Message, Interaction, ChatInputCommandInteraction } from 'discord.js'
 import { promises as fs } from 'fs'
 
 // Internal imports
@@ -15,22 +15,31 @@ import { replaceAsync } from './utils.js'
 
 // Command imports
 import SettimezoneCommand from './cmd/settimezone.js'
-import {getCurrencyValueString} from './currency.js'
+import { getCurrencyValueString } from './currency.js'
 
 // Regex definitions
 const regex = /\-(\d\d?):?(\d\d)? ?([AaPp][Mm])? ?([A-Za-z]+)?([\+\-]\d\d?:?(\d\d)?)?\-/g
 const plusRegex = /^([\+\-])(\d\d?)(\:\d\d)?$/
 const currencyRegex = /\-([\d ]+) ([A-Za-z]+)\-/g
 
+interface ITimezoneEntry {
+    abbr: string;
+    positive: boolean;
+    hour: number;
+    minute: number;
+    minutes: number;
+    raw: string;
+}
+
 // Generate the map of timezones.
 // This takes the timezone abbreviations as input and returns an object storing data about the timezone.
 // Notable we're mostly after the `minutes` field which stores the total minutes of offset from UTC.
-async function generateMap() {
+async function generateMap(): Promise<Record<string, ITimezoneEntry>> {
     try {
         const data = await fs.readFile("timezones.csv", { encoding: 'utf8' })
         const lines = data.split(/\r?\n/)
         
-        const result = {}
+        const result: Record<string, ITimezoneEntry> = {}
         for (const line of lines) {
             try {
                 const split = line.split(',')
@@ -50,7 +59,7 @@ async function generateMap() {
                 const hour = Number(hourStr)
                 const minute = Number(minuteStr)
 
-                const minutes = (hour * 60 + minute) * (positive * 2 - 1)
+                const minutes = (positive ? 1 : -1) * (hour * 60 + minute)
                 result[abbr] = {
                     abbr,
                     positive,
@@ -71,11 +80,11 @@ async function generateMap() {
 }
 
 // Generate the map async and store here.
-const timezoneMap = await generateMap()
+const timezoneMap: Record<string, ITimezoneEntry> = await generateMap()
 
 // Event run when a user send a message in a channel
 // where the bot has read access.
-async function messageCreate(client, message) {
+async function messageCreate(client: Client, message: Message): Promise<void> {
     if (message.author.bot) return;
     const userTz = await getTimezone(message.author.id) || 'UTC'
     const content = message.content
@@ -105,7 +114,7 @@ async function messageCreate(client, message) {
                 const positive = matches[1] === '+'
                 const hourPlus = Number(matches[2])
                 const minutePlus = Number(matches[3] ? matches[3].substring(1) : '00')
-                const timePlus = (positive * 2 - 1) * (hourPlus * 60 + minutePlus)
+                const timePlus = (positive ? 1 : -1) * (hourPlus * 60 + minutePlus)
                 date.setUTCMinutes(date.getUTCMinutes() - timePlus)
             }
         }
@@ -114,7 +123,7 @@ async function messageCreate(client, message) {
         return time
     })
 
-    newContent = await replaceAsync(newContent, currencyRegex, async (p, value, currency) => {
+    newContent = await replaceAsync(newContent, currencyRegex, async (p: string, value: string, currency: string) => {
         try {
             const valueStr = value.replace(' ', '')
             const valueNumber = Number(valueStr)
@@ -134,8 +143,9 @@ async function messageCreate(client, message) {
 
 // Event run when a user starts an interaction (be that a button or slash command).
 // This currently only uses slash commands.
-async function interactionResponse(interaction) {
-    if (!interaction.isChatInputCommand()) return
+async function interactionResponse(baseInteraction: Interaction): Promise<void> {
+    if (!baseInteraction.isChatInputCommand()) return
+    const interaction: ChatInputCommandInteraction = baseInteraction
 
     try {
         if (interaction.commandName === 'settimezone') {
@@ -172,17 +182,17 @@ async function interactionResponse(interaction) {
 // Create the actual bot client instance.
 // This uses some code I've copied from other projects of mine.
 // It's pretty simple but also makes the creation of a bot instance simple as well.
-const bbot = createBot({
+const bbot: Client = createBot({
     authPrefix: 'B',
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
     partials: [Partials.Message, Partials.Channel],
-    ready: client => {
+    ready: (client: Client) => {
         console.log(`Logged in as ${client.user.tag}`)
     },
     commands: [
         SettimezoneCommand
     ],
-    eventsCallback: client => {
+    eventsCallback: (client: Client) => {
         client.on('interactionCreate', interactionResponse)
         client.on('messageCreate', async (...args) => await messageCreate(client, ...args))
     }

@@ -7,9 +7,13 @@
   "license": "MPL",
   "type": "module",
   "dependencies": {
-    "discord.js": "^14.6.0",
+    "discord.js": "^14.14.1",
     "dotenv": "^16.4.3",
     "mongodb": "^6.5.0",
     "websocket": "^1.0.34"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2"
   }
 }

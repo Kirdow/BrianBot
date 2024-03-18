@@ -16,7 +16,7 @@ import { getDatabase, getCollection } from "./db.js"
  * @param {string} timezoneName - Timezone abbreviation of the user. (UTC, GMT, CET, PDT, etc..)
  * @returns {boolean} - True if the storig was successful. Currently only returned value unless error is thrown.
  */
-export async function storeTimezone(userId, timezoneName) {
+export async function storeTimezone(userId: string, timezoneName: string): Promise<boolean> {
     const db = await getDatabase('brianbot')
     const users = await getCollection('users', db)
 
@@ -34,7 +34,7 @@ export async function storeTimezone(userId, timezoneName) {
  * @param {string} userId - The discord.js ID of the user
  * @returns {string} - The timezone abbreviation of the user. (UTC, GMT, CET, PDT, etc..)
  */
-export async function getTimezone(userId) {
+export async function getTimezone(userId: string): Promise<string> {
     const db = await getDatabase('brianbot')
     const users = await getCollection('users', db)
 
