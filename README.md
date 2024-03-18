@@ -1,5 +1,5 @@
 # Brian Bot
-**Brian Bot** is a bot that currently allows you to easily mention Timezones in discord chats.
+**Brian Bot** is a multi-purpose discord bot that currently offers features with Timezones and Currency.
 
 # Slash Commands
 There's only one slash command
@@ -17,6 +17,11 @@ This will change your timezone fallback to PDT rather than UTC.
 Do also note that when your country switches between daylight saving times, you will need to adapt manually. I would do it automatically, but not all countries follow daylight saving, which means it would be inaccurate.
 
 # How to use
+Brian Bot currently offers 2 features. Timezone conversion and Currency conversion.<br>
+Do note that the bot needs to be able to read message history as well as being able to send messages, as well as ability for users to use slash commands. This is all that it needs.<br>
+Do also note that you need to surround your inputs with `-` in order to actually use the bots chat features. In doing so, assuming it matches the regex, it will proceed with performing the following features.
+
+## Timezone Conversion
 Supports multiple message layouts.
 Here's a few examples
 ```
@@ -43,14 +48,52 @@ This would be the same as (or if you used `/settimezone`, replace UTC with whate
 Do also note that letters are case-insensitive.
 This means `12:30AM PDT` is the same as `12:30am pdt`.
 
-Do note that you need to surround your inputs with `-` in order to actually use the bot. In doing so, assuming it matches the regex, the bot will respond with the following:
+When using the bot to convert timezones, as stated before, surround the input with `-`. If you do this, and it matches the regex, the bot will reply with the following:
 
 Let's say you type `Currently it's -2:30pm cet- and I quit work at -4:45pm cet-`, then the bot would respond (assuming your local timezone is UTC and today's date is March 16th 2024) with `Currently it's 16 March 2024 13:30 and I quit work at 16 March 2024 15:45`.
 
-Do also note that the bot needs to be able to read message history as well as being able to send messages. This is all that it needs.
+## Currency Conversion
+There's only really a single layout this supports.
+```
+<value> <currency abbreviation>
+```
+This means the following is valid
+```
+100 SEK
+1 BTC
+12 GBP
+1000 USD
+15 NOK
+```
+However note that some people may write spaces in their numbers, thus these are also valid
+```
+1 000 SEK
+20 000 GBP
+1 0 0 0 0 NOK
+```
+Last one is silly, but it does work.
+
+Do note that just like the last feature, letters are case-insensitive.
+This means `12 SEK` is the same as `12 sek`.
+
+The converted values are currently only shows in euros (€).<br>
+If the value is less than 1€, it will show 8 decimals, otherwise only 2 decimals.
+
+When using the bot to convert currencies, as stated before, surround the input with `-`. If you do this, and it matches the regex, the bot will reply with the following:
+
+Let's say you type `I bought my food for -49 sek-`, assuming one EUR is 11.28 SEK, the bot will reply with `I bought my food for 4.34€`, and if you type `I saw a sweet going for -10 sek-` the bot will reply with `I saw a sweet going for 0.88590740€`.
+
+## Extra
+Note that both the Timezone and Currency conversion feature can be used in the same message.
 
 # Setup
+This will go through the steps necessary to host and run Brian Bot.<br>
 Of course, you need some manual setup to use this bot. First off, make sure you got a discord application with a bot account on it.<br>
+This will be the user used to run this discord bot under.
+
+Next, proceed to follow the instructions below to set up the rest of the bots needs.
+
+## `.env` Config.
 Create a file called `.env` next to the `package.json` file, and include this content:
 ```
 BTOKEN="<insert bot auth token here>"
@@ -70,10 +113,12 @@ DB_USER_AQWSBEQL="<insert mongodb user here>"
 DB_PASS_AQWSBEQL="<insert mongodb user password here>"
 ```
 
+## `timezones.csv` File
 Additionally, you will need a file called `timezones.csv`. Due to potential licensing issues I have not included this in here.<br>
 Instead you need to naviate to [List of time zone abbreviations on Wikipedia](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations) and download that table as a csv file.<br>
 Wikipedia don't have their own way of offering that to you, but simply googling something like `wikipedia table to csv` should give you some ways of doing that.
 
+## Running the bot
 Once you got all that, you can now run the bot using the following command
 ```sh
 $ node --loader ts-node/esm src/app.ts
@@ -84,6 +129,7 @@ Do note that you may be missing installed modules, if so, make sure to install t
 $ npm i
 ```
 
+## Running the bot as a service
 Optionally you can also run it as a service. I use Linux for my hosting needs so I will show how to run it using systemd.
 ```ini
 [Unit]
@@ -108,6 +154,7 @@ On Ubuntu, save this to ``/etc/systemd/system/brianbot.service``, then run the f
 $ sudo systemctl daemon-reload
 ```
 
+## Managing the bot service
 To manage the bot state, run one of the following
 ```sh
 # Start/Stop/Restart the bot
@@ -120,6 +167,7 @@ $ sudo systemctl <enable|disable> brianbot
 $ sudo systemctl status brianbot
 ```
 
+## Manage bot service logs
 To check the logs, run one of the following
 ```sh
 # Check the logs from the moment the bot service was created.
