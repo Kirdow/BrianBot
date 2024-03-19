@@ -12,72 +12,16 @@ import { promises as fs } from 'fs'
 import { createBot } from './dbot.js'
 import { storeTimezone, getTimezone } from './tzdb.js'
 import { replaceAsync } from './utils.js'
+import { generateMap, ITimezoneEntry } from './timezones.js'
+import { getCurrencyValueString } from './currency.js'
 
 // Command imports
 import SettimezoneCommand from './cmd/settimezone.js'
-import { getCurrencyValueString } from './currency.js'
 
 // Regex definitions
 const regex = /\-(\d\d?):?(\d\d)? ?([AaPp][Mm])? ?([A-Za-z]+)?([\+\-]\d\d?:?(\d\d)?)?\-/g
 const plusRegex = /^([\+\-])(\d\d?)(\:\d\d)?$/
 const currencyRegex = /\-([\d ]+) ([A-Za-z]+)\-/g
-
-interface ITimezoneEntry {
-    abbr: string;
-    positive: boolean;
-    hour: number;
-    minute: number;
-    minutes: number;
-    raw: string;
-}
-
-// Generate the map of timezones.
-// This takes the timezone abbreviations as input and returns an object storing data about the timezone.
-// Notable we're mostly after the `minutes` field which stores the total minutes of offset from UTC.
-async function generateMap(): Promise<Record<string, ITimezoneEntry>> {
-    try {
-        const data = await fs.readFile("timezones.csv", { encoding: 'utf8' })
-        const lines = data.split(/\r?\n/)
-        
-        const result: Record<string, ITimezoneEntry> = {}
-        for (const line of lines) {
-            try {
-                const split = line.split(',')
-                if (split.length !== 3) continue;
-                const abbr = split[0]
-                if (abbr.toUpperCase() !== abbr) continue;
-
-                const fullOffset = split[2]
-
-                // Dual zone
-                if (fullOffset.includes('/')) continue
-
-                const positive = fullOffset[3] === '+'
-                const hourStr = fullOffset[4] + fullOffset[5]
-                const minuteStr = fullOffset.includes(':') ? fullOffset[7] + fullOffset[8] : '00'
-
-                const hour = Number(hourStr)
-                const minute = Number(minuteStr)
-
-                const minutes = (positive ? 1 : -1) * (hour * 60 + minute)
-                result[abbr] = {
-                    abbr,
-                    positive,
-                    hour,
-                    minute,
-                    minutes,
-                    raw: fullOffset
-                }
-            } catch (error) {
-                console.error(`Failed to parse entry for line [${line}]:`, error)
-            }
-        }
-        return result
-    } catch (error) {
-        console.error("Error reading timezone map:", error)
-        return {}
-    }
-}
 
 // Generate the map async and store here.
 const timezoneMap: Record<string, ITimezoneEntry> = await generateMap()
@@ -149,7 +93,7 @@ async function interactionResponse(baseInteraction: Interaction): Promise<void> 
 
     try {
         if (interaction.commandName === 'settimezone') {
-            const tz = interaction.options.getString('tz')
+            const tz = interaction.options.getString('tz')!
 
             if (!timezoneMap[tz.toUpperCase()]) {
                 await interaction.reply({
@@ -187,7 +131,7 @@ const bbot: Client = createBot({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
     partials: [Partials.Message, Partials.Channel],
     ready: (client: Client) => {
-        console.log(`Logged in as ${client.user.tag}`)
+        console.log(`Logged in as ${client.user!.tag}`)
     },
     commands: [
         SettimezoneCommand

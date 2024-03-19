@@ -8,8 +8,7 @@
 import 'dotenv/config'
 
 // Lib imports
-const fs = await import('fs')
-import { REST, Routes, Client, RESTPostAPIChatInputApplicationCommandsJSONBody, GatewayIntentBits, Partials } from 'discord.js'
+import { Routes, Client, RESTPostAPIChatInputApplicationCommandsJSONBody, GatewayIntentBits, Partials } from 'discord.js'
 
 export interface ICreateBotOptions {
     authPrefix: string
@@ -27,6 +26,10 @@ export interface ICreateBotOptions {
 export function createBot(opts: ICreateBotOptions): Client {
     const token = process.env[`${opts.authPrefix}TOKEN`]
     const clientId = process.env[`${opts.authPrefix}CLIENT_ID`]
+    if (!token || !clientId) {
+        throw new Error("Failed to create bot. Missing Token or ClientID")
+    }
+
     const client = new Client({ intents: opts.intents || [], partials: opts.partials || [], rest: { version: '10' } })
     const registerCommands = (async () => {
         if (opts.commands) {
@@ -64,7 +67,7 @@ export function createBot(opts: ICreateBotOptions): Client {
         console.debug(`Discord Debug [${name}]:`, dbg)
     })
     client.on('ready', () => {
-        name = client.user.username
+        name = client.user?.username ?? 'Unknown'
         if (opts.ready) {
             try {
                 opts.ready(client)

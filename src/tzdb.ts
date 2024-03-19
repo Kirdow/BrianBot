@@ -34,7 +34,7 @@ export async function storeTimezone(userId: string, timezoneName: string): Promi
  * @param {string} userId - The discord.js ID of the user
  * @returns {string} - The timezone abbreviation of the user. (UTC, GMT, CET, PDT, etc..)
  */
-export async function getTimezone(userId: string): Promise<string> {
+export async function getTimezone(userId: string): Promise<string | null> {
     const db = await getDatabase('brianbot')
     const users = await getCollection('users', db)
 

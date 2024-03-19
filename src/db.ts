@@ -57,9 +57,7 @@ function getKey(name: string): string {
         str += String.fromCharCode(((result[i] % 26) | 0) + 65)
     }
 
-    const key = keys[name] = str.toUpperCase()
-
-    return key
+    return keys[name] = str.toUpperCase()
 }
 
 // Return client if exist or create it and cache it.
