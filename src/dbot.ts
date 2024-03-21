@@ -92,3 +92,4 @@ export function createBot(opts: ICreateBotOptions): Client {
 
     return client
 }
+

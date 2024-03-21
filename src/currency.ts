@@ -35,3 +35,4 @@ export async function getCurrencyValueString(name: string, value: number): Promi
     const str = eurValue < 1.0 ? eurValue.toFixed(8) : eurValue.toFixed(2)
     return str + "€"
 }
+

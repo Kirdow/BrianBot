@@ -12,8 +12,9 @@ const settimezoneCommand = new SlashCommandBuilder()
     .setName('settimezone')
     .setDescription('Set your timezone')
     .addStringOption((option) =>
-        option.setName('tz').setDescription('Your timezone abbreviation').setRequired(true)
+        option.setName('tz').setDescription('Your timezone abbreviation').setRequired(false)
     )
 
 // Export the command JSON as a default export
 export default settimezoneCommand.toJSON()
+

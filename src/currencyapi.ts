@@ -92,3 +92,4 @@ export async function getCurrencyData(endpoint: string): Promise<CurrencyCourseM
 
     return data
 }
+

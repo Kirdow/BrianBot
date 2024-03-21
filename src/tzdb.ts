@@ -30,6 +30,19 @@ export async function storeTimezone(userId: string, timezoneName: string): Promi
 }
 
 /**
+ * Used to delete a stored user timezone.
+ * @param {string} userId - The discord.js ID of the user.
+ * @returns {boolean} - True if the deletion was successful.
+ */
+export async function removeTimezone(userId: string): Promise<boolean> {
+    const db = await getDatabase('brianbot')
+    const users = await getCollection('users', db)
+
+    const result = await users.deleteMany({ id: userId })
+    return result.deletedCount > 0
+}
+
+/**
  * Used to fetch the timezone for a specific user.
  * @param {string} userId - The discord.js ID of the user
  * @returns {string} - The timezone abbreviation of the user. (UTC, GMT, CET, PDT, etc..)
@@ -43,3 +56,4 @@ export async function getTimezone(userId: string): Promise<string | null> {
 
     return doc.tz
 }
+

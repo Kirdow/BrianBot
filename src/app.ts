@@ -10,13 +10,14 @@ import { promises as fs } from 'fs'
 
 // Internal imports
 import { createBot } from './dbot.js'
-import { storeTimezone, getTimezone } from './tzdb.js'
+import { storeTimezone, getTimezone, removeTimezone } from './tzdb.js'
 import { replaceAsync } from './utils.js'
 import { generateMap, ITimezoneEntry } from './timezones.js'
 import { getCurrencyValueString } from './currency.js'
 
 // Command imports
 import SettimezoneCommand from './cmd/settimezone.js'
+import GettimezoneCommand from './cmd/gettimezone.js'
 
 // Regex definitions
 const regex = /\-(\d\d?):?(\d\d)? ?([AaPp][Mm])? ?([A-Za-z]+)?([\+\-]\d\d?:?(\d\d)?)?\-/g
@@ -92,8 +93,19 @@ async function interactionResponse(baseInteraction: Interaction): Promise<void> 
     const interaction: ChatInputCommandInteraction = baseInteraction
 
     try {
+        console.log(`${interaction.user.globalName} used /${interaction.commandName}`)
         if (interaction.commandName === 'settimezone') {
-            const tz = interaction.options.getString('tz')!
+            const tz = interaction.options.getString('tz')
+            console.log('Arg tz:', tz)
+            if (tz === null) {
+                const result = await removeTimezone(interaction.user.id)
+                await interaction.reply({
+                    content: result ? "Removed timezone setting!" : "No timezone setting to remove!",
+                    ephemeral: true
+                })
+
+                return
+            }
 
             if (!timezoneMap[tz.toUpperCase()]) {
                 await interaction.reply({
@@ -108,6 +120,23 @@ async function interactionResponse(baseInteraction: Interaction): Promise<void> 
             
             await interaction.reply({
                 content: `Your timezone is now set to ${tz.toUpperCase()}`,
+                ephemeral: true
+            })
+
+            return
+        } else if (interaction.commandName === 'gettimezone') {
+            const tz = await getTimezone(interaction.user.id)
+            if (tz === null) {
+                await interaction.reply({
+                    content: "No timezone set!",
+                    ephemeral: true
+                })
+
+                return
+            }
+
+            await interaction.reply({
+                content: `Your timezone is set to ${tz.toUpperCase()}`,
                 ephemeral: true
             })
 
@@ -141,3 +170,4 @@ const bbot: Client = createBot({
         client.on('messageCreate', async (...args) => await messageCreate(client, ...args))
     }
 })
+

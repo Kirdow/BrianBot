@@ -111,3 +111,4 @@ export async function getCollection(name: string, db: Db): Promise<Collection> {
 
     return db.collection(name)
 }
+
