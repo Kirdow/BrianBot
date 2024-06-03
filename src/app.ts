@@ -64,7 +64,7 @@ async function messageCreate(client: Client, message: Message): Promise<void> {
             }
         }
 
-        const time = `<t:${Math.trunc(date.getTime() / 1000)}:f>`
+        const time = `<t:${Math.trunc(date.getTime() / 1000)}:t>`
         return time
     })
 
